@@ -8,7 +8,7 @@ Hack project from GraphHack meetup @ GraphConnect 2014
 
  * Install Neo4j and load graph data from https://github.com/nicolewhite/flight_graph
 
- * Download CSV file with aiport codes and latitude/longitude and merge into the graph
+ * Download CSV file with airport codes and latitude/longitude and merge into the graph
    https://raw.github.com/allanglen/graphhack_flights/master/data/Airport_loc.csv
 
   ```
