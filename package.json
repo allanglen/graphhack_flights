@@ -1,25 +1,29 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.1.2",
-  "description": "A sample Node.js app using Express 4",
+  "name": "graphhack_flights",
+  "version": "0.0.1",
+  "description": "Visualization of flight delays from US airports using d3, node.js and Neo4j",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "~4.9.x"
+    "express": "~4.9.x",
+    "express3-handlebars": "^0.5.2"
   },
   "engines": {
     "node": "0.10.x"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
+    "url": "https://github.com/allanglen/graphhack_flights"
   },
   "keywords": [
-    "node",
-    "heroku",
-    "express"
+    "neo4j",
+    "cypher",
+    "node.js",
+    "d3",
+    "geo",
+    "visualization"
   ],
   "license": "MIT"
 }

@@ -1,7 +1,6 @@
 {
-  "name": "Node.js Getting Started",
-  "description": "A barebones Node.js app using Express 4",
-  "repository": "https://github.com/heroku/node-js-getting-started",
-  "logo": "http://node-js-sample.herokuapp.com/node.svg",
-  "keywords": ["node", "express", "static"]
+  "name": "Flight Delays (GraphHack project @ GraphConnect 2014 SF)",
+  "description": "Visualization of flight delays from US airports using d3, node.js and Neo4j",
+  "repository": "https://github.com/allanglen/graphhack_flights",
+  "keywords": ["neo4j", "cypher", "node.js", "d3", "geo", "visualization"]
 }

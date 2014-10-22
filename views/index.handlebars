@@ -1,0 +1,146 @@
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="/js/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="http://datamaps.github.io/scripts/datamaps.usa.min.js?v=1"></script>
+
+<div id="map" style="position: relative; width: 100%; height: 100vh;"></div>
+
+<style>
+.datamaps-bubble {
+	cursor: pointer;
+}
+</style>
+
+<script>
+       //basic map config with custom fills, mercator projection
+      var map = new Datamap({
+        scope: 'usa',
+        element: document.getElementById('map'),
+        projection: 'mercator',
+        geographyConfig: {
+	        borderWidth: 1,
+	        borderColor: '#FFFFFF',
+	        popupTemplate: function(geography, data) {
+	          return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
+	        },
+	        popupOnHover: true,
+	        highlightOnHover: true,
+	        highlightFillColor: '#e9e9e9',
+	        highlightBorderColor: '#FFFFFF',
+	        highlightBorderWidth: 1
+	    },
+	    bubblesConfig: {
+	        borderWidth: 2,
+	        borderColor: '#FFFFFF',
+	        popupOnHover: true,
+	    },
+        fills: {
+          defaultFill: '#dddddd',
+          airport: 'green'
+        }
+      })	
+      
+      $.ajax({
+	    type: "POST",
+	    url: "http://localhost:7474/db/data/cypher",
+	    accepts: { json: "application/json" },
+	    dataType: "json",
+	    contentType:"application/json",
+	    data: JSON.stringify({ "query" : "match (a:Airport) return a.abbr,a.latitude,a.longitude", "params": {} })
+	 })
+     .done(function( data ) {
+     	var bubbles = []
+
+     	// Create a bubble for each airport
+    	$.each(data.data, function(index, value) {
+    		abbr = value[0]
+    		latitude = value[1]
+    		longitude = value[2]
+
+    		if (latitude != null && longitude != null) {
+	    		bubbles.push(
+	    			{
+	    				abbr: abbr,
+	    				latitude: latitude,
+	    				longitude: longitude,
+	    				radius: 5,
+	    				fillKey: 'airport'
+	    			}
+	    		)
+    		}
+    	})
+
+	    // Add the bubbles to the map
+	    map.bubbles(bubbles, {
+	       popupTemplate: function(geo, data) {
+	         return "<div class='hoverinfo'><strong>Airport:</strong> " + data.abbr + "</div>";
+	       }
+	     });
+
+	   	// Handle airport clicks
+		$(".datamaps-bubble").on('click', function(event, data) {
+			airportNode = event.target.__data__
+			showAirportFlights(airportNode)
+		});
+
+	  });
+     
+     function showAirportFlights(airportNode) {
+
+     	// Get all outbound destinations from the airport ranked by number of delayed flights
+		var query = "match (f:Flight)-[:ORIGIN]->(o:Airport {abbr: {airport}}), (f)-[:DESTINATION]->(a:Airport) optional match (f)-[:DELAYED_BY]->(r:Reason) return a.abbr, a.latitude, a.longitude, count(r)*1.0/count(f) as delayed"
+
+     	$.ajax({
+		    type: "POST",
+		    url: "http://localhost:7474/db/data/cypher",
+		    accepts: { json: "application/json" },
+		    dataType: "json",
+		    contentType:"application/json",
+		    data: JSON.stringify({ "query" : query, "params": {airport: airportNode.abbr} })
+	 	})
+		.done(function( data ) {
+
+			// Clear existing arcs
+			map.arc([])
+
+	     	var arcs = []
+
+	     	$.each(data.data, function(index, value) {
+
+	    		abbr = value[0]
+	    		latitude = value[1]
+	    		longitude = value[2]
+	    		rank = value[3]
+
+	    		if (!isNaN(latitude) && !isNaN(longitude)) {
+
+	    			// Compute the arc color
+		    		red = Math.round(255 * rank)
+		    		green = Math.round(255 * (1-rank))
+		    		rgba = 'rgba(' + red + ', ' + green + ', 0, 0.8)'
+
+		    		// Append to the list of arcs
+		    		arcs.push(
+		    			{
+							origin: {
+							    latitude: airportNode.latitude,
+							    longitude: airportNode.longitude
+							},
+							destination: {
+							    latitude: latitude,
+							    longitude: longitude
+							},
+							"options": {"strokeColor": rgba}
+						}
+		    		)
+
+	    		}
+	    	})
+
+	     	// Render the arcs
+			map.arc(arcs, {strokeWidth: 2});
+
+	    })
+
+     }
+</script>
